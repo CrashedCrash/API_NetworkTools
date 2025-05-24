@@ -1,40 +1,46 @@
 // API_NetworkTools/Program.cs
 using API_NetworkTools.Tools.Interfaces;
 using API_NetworkTools.Tools.Implementations;
+using API_NetworkTools.Data; // Für AppDbContext
+using Microsoft.EntityFrameworkCore; // Für UseSqlite
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS (wie zuvor)
 var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: myAllowSpecificOrigins, policy =>
-    {
-        // WICHTIG: Ersetze dies mit deiner WordPress Domain!
-        policy.WithOrigins("*") 
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+builder.Services.AddCors(options => { /* ... */ });
+
+// === DbContext für SQLite hinzufügen ===
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=urlshortener.db";
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
+// Die SQLite-Datenbankdatei (urlshortener.db) wird im Hauptverzeichnis deiner App erstellt.
+// === Ende DbContext ===
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // Füge ggf. `dotnet add package Swashbuckle.AspNetCore` aus, falls nicht schon im Projekt
+builder.Services.AddSwaggerGen();
 
 // Registrierung der Netzwerk-Tools
 builder.Services.AddTransient<INetworkTool, PingTool>();
-// builder.Services.AddTransient<INetworkTool, DnsLookupTool>(); // Für zukünftige Tools
+builder.Services.AddTransient<INetworkTool, UrlShortenerTool>(); // NEUES TOOL REGISTRIEREN
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// === Datenbank-Migrationen beim Start anwenden (optional, gut für Entwicklung) ===
+// In Produktion ist es oft besser, Migrationen manuell oder per Skript anzuwenden.
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate(); // Erstellt die DB und wendet Migrationen an, falls nötig
 }
+// === Ende DB-Migrationen ===
 
-// app.UseHttpsRedirection(); // Wird oft vom Reverse Proxy (NPM) gehandhabt
+
+if (app.Environment.IsDevelopment()) { /* ... */ }
+// app.UseHttpsRedirection();
 app.UseCors(myAllowSpecificOrigins);
 // app.UseAuthorization();
-
 app.MapControllers();
+
 app.Run();
