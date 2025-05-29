@@ -41,6 +41,8 @@ builder.Services.AddSwaggerGen(); // Stellt sicher, dass Swashbuckle.AspNetCore 
 // 5. Registrierung deiner Netzwerk-Tools für Dependency Injection
 builder.Services.AddTransient<INetworkTool, PingTool>();
 builder.Services.AddTransient<INetworkTool, UrlShortenerTool>();
+builder.Services.AddTransient<INetworkTool, ARecordLookupTool>();
+builder.Services.AddTransient<INetworkTool, AAAARecordLookupTool>();
 // Hier später weitere Tools registrieren, z.B.:
 // builder.Services.AddTransient<INetworkTool, DnsLookupTool>();
 
