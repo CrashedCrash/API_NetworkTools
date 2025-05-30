@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Publish for Linux",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/API_NetworkTools.csproj",
+        "--configuration",
+        "Release",
+        "--runtime",
+        "linux-x64",
+        "--output",
+        "${workspaceFolder}/Bin/Publish/Linux-x64",
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}

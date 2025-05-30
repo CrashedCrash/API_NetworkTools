@@ -28,7 +28,6 @@
 # Build output folders
 [Dd]ebug/
 [Rr]elease/
-Build/
 [Ll]ogs/
 [Ll]og/
 urlshortener.db
