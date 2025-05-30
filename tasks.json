@@ -15,7 +15,7 @@
         "--self-contained",
         "true",
         "--output",
-        "${workspaceFolder}/API_NetworkTools/Bin/Publish/Linux-x64-SelfContained"
+        "${workspaceFolder}/API_NetworkTools/bin/publish/linux-x64-selfcontained"
       ],
       "problemMatcher": "$msCompile",
       "group": {
