@@ -4,24 +4,24 @@ Eine ASP.NET Core Web API, die eine Sammlung von Netzwerk-Dienstprogrammen berei
 
 ## Inhaltsverzeichnis
 
-- Über das Projekt
-- Funktionen
-- Technologie-Stack
-- API Endpunkte
-  - Verfügbare Tools auflisten
-  - Tool ausführen
-  - URL-Weiterleitung
-- Erste Schritte
-  - Voraussetzungen
-  - Installation & Konfiguration
-  - Datenbankmigration
-  - API starten
-- Verwendung der Tools (Beispiele)
-  - Ping
-  - URL Shortener
-  - A Record Lookup (IPv4)
-  - AAAA Record Lookup (IPv6)
-- Veröffentlichen
+- [Über das Projekt](#über-das-projekt)
+- [Funktionen](#funktionen)
+- [Technologie-Stack](#technologie-stack)
+- [API Endpunkte](#api-endpunkte)
+  - [Verfügbare Tools auflisten](#verfügbare-tools-auflisten)
+  - [Tool ausführen](#tool-ausführen)
+  - [URL-Weiterleitung](#url-weiterleitung)
+- [Erste Schritte](#erste-schritte)
+  - [Voraussetzungen](#voraussetzungen)
+  - [Installation & Konfiguration](#installation--konfiguration)
+  - [Datenbankmigration](#datenbankmigration)
+  - [API starten](#api-starten)
+- [Verwendung der Tools (Beispiele)](#verwendung-der-tools-beispiele)
+  - [Ping](#ping)
+  - https://www.shorturl.at/(#url-shortener)
+  - [A Record Lookup (IPv4)](#a-record-lookup-ipv4)
+  - [AAAA Record Lookup (IPv6)](#aaaa-record-lookup-ipv6)
+- [Veröffentlichen](#veröffentlichen)
 
 ## Über das Projekt
 
@@ -53,21 +53,22 @@ Die API stellt folgende Endpunkte bereit:
 * **GET** `/api/tools`
     * Beschreibung: Gibt eine Liste aller verfügbaren Netzwerk-Tools zurück, einschließlich ihrer Bezeichner, Anzeigenamen, Beschreibungen und erforderlichen Parameter.
     * Antwort:
-        > [
-        >   {
-        >     "identifier": "ping",
-        >     "displayName": "Ping",
-        >     "description": "Sendet ICMP Echo-Anfragen an einen Host.",
-        >     "parameters": []
-        >   },
-        >   {
-        >     "identifier": "url-shortener",
-        >     "displayName": "URL Shortener",
-        >     "description": "Erstellt eine kurze, eindeutige URL für eine lange URL.",
-        >     "parameters": []
-        >   },
-        >   // ... weitere Tools
-        > ]
+
+        [
+          {
+            "identifier": "ping",
+            "displayName": "Ping",
+            "description": "Sendet ICMP Echo-Anfragen an einen Host.",
+            "parameters": []
+          },
+          {
+            "identifier": "url-shortener",
+            "displayName": "URL Shortener",
+            "description": "Erstellt eine kurze, eindeutige URL für eine lange URL.",
+            "parameters": []
+          },
+          // ... weitere Tools
+        ]
 
 ### Tool ausführen
 
@@ -78,29 +79,30 @@ Die API stellt folgende Endpunkte bereit:
         * `target` (string, erforderlich): Das Ziel für das Tool (z.B. eine IP-Adresse für Ping, eine lange URL für den URL Shortener).
         * `options` (Dictionary<string, string>, optional): Zusätzliche optionsspezifische Parameter für das Tool.
     * Antwort (Beispiel für Ping):
-        > // Erfolg
-        > {
-        >   "success": true,
-        >   "toolName": "Ping",
-        >   "data": {
-        >     "target": "google.com",
-        >     "ipAddress": "142.250.185.14",
-        >     "roundtripTime": 15,
-        >     "ttl": 117,
-        >     "status": "Success"
-        >   },
-        >   "errorMessage": null,
-        >   "rawOutput": null
-        > }
-        >
-        > // Fehler
-        > {
-        >   "success": false,
-        >   "toolName": "Ping",
-        >   "data": null,
-        >   "errorMessage": "Ziel (Host/IP) darf nicht leer sein.",
-        >   "rawOutput": null
-        > }
+
+        // Erfolg
+        {
+          "success": true,
+          "toolName": "Ping",
+          "data": {
+            "target": "google.com",
+            "ipAddress": "142.250.185.14",
+            "roundtripTime": 15,
+            "ttl": 117,
+            "status": "Success"
+          },
+          "errorMessage": null,
+          "rawOutput": null
+        }
+
+        // Fehler
+        {
+          "success": false,
+          "toolName": "Ping",
+          "data": null,
+          "errorMessage": "Ziel (Host/IP) darf nicht leer sein.",
+          "rawOutput": null
+        }
 
 ### URL-Weiterleitung
 
@@ -124,24 +126,27 @@ Folge diesen Anweisungen, um das Projekt lokal einzurichten und auszuführen.
 ### Installation & Konfiguration
 
 1.  **Klone das Repository (optional):**
-    > git clone <repository-url>
-    > cd API_NetworkTools
+
+        git clone <repository-url>
+        cd API_NetworkTools
 
 2.  **Abhängigkeiten wiederherstellen:**
     Navigiere in das Projektverzeichnis `API_NetworkTools` und führe aus:
-    > dotnet restore
+
+        dotnet restore
 
 3.  **Konfiguration:**
     Die Hauptkonfiguration befindet sich in `API_NetworkTools/appsettings.json`.
     Für Entwicklungseinstellungen kann `API_NetworkTools/appsettings.Development.json` verwendet werden.
     * **Datenbankverbindung**: Die Standard-Datenbankverbindung ist für SQLite konfiguriert und lautet `Data Source=urlshortener.db`. Diese Datei wird im Hauptverzeichnis der Anwendung erstellt.
-        > // appsettings.json (Beispiel für DefaultConnection)
-        > {
-        >   "ConnectionStrings": {
-        >     "DefaultConnection": "Data Source=urlshortener.db"
-        >   },
-        >   // ...
-        > }
+
+        // appsettings.json (Beispiel für DefaultConnection)
+        {
+          "ConnectionStrings": {
+            "DefaultConnection": "Data Source=urlshortener.db"
+          },
+          // ...
+        }
     * **CORS**: Standardmäßig sind CORS-Richtlinien so konfiguriert, dass Anfragen von beliebigen Ursprüngen, mit beliebigen Headern und Methoden erlaubt sind (`policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod();`). Dies ist in `Program.cs` definiert.
 
 ### Datenbankmigration
@@ -149,32 +154,35 @@ Folge diesen Anweisungen, um das Projekt lokal einzurichten und auszuführen.
 Für den URL Shortener wird eine Datenbank verwendet. Stelle sicher, dass die Migrationen angewendet werden, um das Datenbankschema zu erstellen/aktualisieren:
 
 Das Projekt ist so konfiguriert, dass Migrationen beim Start der Anwendung automatisch angewendet werden:
-> // API_NetworkTools/Program.cs
-> using (var scope = app.Services.CreateScope())
-> {
->     var services = scope.ServiceProvider;
->     try
->     {
->         var dbContext = services.GetRequiredService<AppDbContext>();
->         dbContext.Database.Migrate(); // Wendet ausstehende Migrationen an
->     }
->     catch (Exception ex)
->     {
->         var logger = services.GetRequiredService<ILogger<Program>>();
->         logger.LogError(ex, "An error occurred while migrating or initializing the database.");
->     }
-> }
+
+    // API_NetworkTools/Program.cs
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var dbContext = services.GetRequiredService<AppDbContext>();
+            dbContext.Database.Migrate(); // Wendet ausstehende Migrationen an
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+        }
+    }
 
 Falls du Migrationen manuell verwalten möchtest (z.B. neue erstellen):
-> dotnet tool install --global dotnet-ef
-> dotnet ef migrations add NameDerMigration -p API_NetworkTools/API_NetworkTools.csproj -s API_NetworkTools/API_NetworkTools.csproj
-> dotnet ef database update -p API_NetworkTools/API_NetworkTools.csproj -s API_NetworkTools/API_NetworkTools.csproj
+
+        dotnet tool install --global dotnet-ef
+        dotnet ef migrations add NameDerMigration -p API_NetworkTools/API_NetworkTools.csproj -s API_NetworkTools/API_NetworkTools.csproj
+        dotnet ef database update -p API_NetworkTools/API_NetworkTools.csproj -s API_NetworkTools/API_NetworkTools.csproj
 
 ### API starten
 
 Du kannst die API über die Kommandozeile starten:
-> cd API_NetworkTools
-> dotnet run
+
+        cd API_NetworkTools
+        dotnet run
 
 Standardmäßig läuft die Anwendung unter:
 * HTTP: `http://localhost:5199`
@@ -188,71 +196,75 @@ Hier sind einige Beispiele, wie du die Tools über `curl` oder einen API-Client 
 
 ### Ping
 
-> curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=ping&target=google.com"
+        curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=ping&target=google.com"
 
 Erwartete Antwort (Erfolg):
-> {
->   "success": true,
->   "toolName": "Ping",
->   "data": {
->     "target": "google.com",
->     "ipAddress": "...", // IP-Adresse von google.com
->     "roundtripTime": 20, // Beispiel-Antwortzeit
->     "ttl": 56, // Beispiel-TTL
->     "status": "Success"
->   },
->   "errorMessage": null,
->   "rawOutput": null
-> }
+
+        {
+          "success": true,
+          "toolName": "Ping",
+          "data": {
+            "target": "google.com",
+            "ipAddress": "...", // IP-Adresse von google.com
+            "roundtripTime": 20, // Beispiel-Antwortzeit
+            "ttl": 56, // Beispiel-TTL
+            "status": "Success"
+          },
+          "errorMessage": null,
+          "rawOutput": null
+        }
 
 ### URL Shortener
 
-> curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=url-shortener&target=https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsehr%2Blange%2Burl%2Bmit%2Bvielen%2Bparametern"
+        curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=url-shortener&target=https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dsehr%2Blange%2Burl%2Bmit%2Bvielen%2Bparametern"
 
 Erwartete Antwort (Erfolg):
-> {
->   "success": true,
->   "toolName": "URL Shortener",
->   "data": {
->     "shortUrl": "https://api.solidstate.network/s/xxxxxx", // xxxxxxx ist der generierte Kurzcode
->     "longUrl": "https://www.google.com/search?q=sehr+lange+url+mit+vielen+parametern"
->   },
->   "errorMessage": null,
->   "rawOutput": null
-> }
+
+        {
+          "success": true,
+          "toolName": "URL Shortener",
+          "data": {
+            "shortUrl": "https://api.solidstate.network/s/xxxxxx", // xxxxxxx ist der generierte Kurzcode
+            "longUrl": "https://www.google.com/search?q=sehr+lange+url+mit+vielen+parametern"
+          },
+          "errorMessage": null,
+          "rawOutput": null
+        }
 
 Anschließend kannst du `https://api.solidstate.network/s/xxxxxx` im Browser öffnen, um zur langen URL weitergeleitet zu werden.
 *Hinweis: Die `ShortLinkBaseUrl` ist derzeit auf `https://api.solidstate.network/s/` hardcodiert. Für lokale Tests wird die Weiterleitung über deinen lokalen Host erfolgen, z.B. `http://localhost:5199/s/xxxxxx`.*
 
 ### A Record Lookup (IPv4)
 
-> curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=a-lookup&target=github.com"
+        curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=a-lookup&target=github.com"
 
 Erwartete Antwort (Erfolg):
-> {
->   "success": true,
->   "toolName": "A Record Lookup (IPv4)",
->   "data": [
->     "140.82.121.4" // Beispiel-IPv4-Adresse
->   ],
->   "errorMessage": null,
->   "rawOutput": null
-> }
+
+        {
+          "success": true,
+          "toolName": "A Record Lookup (IPv4)",
+          "data": [
+            "140.82.121.4" // Beispiel-IPv4-Adresse
+          ],
+          "errorMessage": null,
+          "rawOutput": null
+        }
 
 ### AAAA Record Lookup (IPv6)
 
-> curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=aaaa-lookup&target=google.com"
+        curl -X GET "http://localhost:5199/api/tools/execute?toolIdentifier=aaaa-lookup&target=google.com"
 
 Erwartete Antwort (Erfolg):
-> {
->   "success": true,
->   "toolName": "AAAA Record Lookup (IPv6)",
->   "data": [
->     "2a00:1450:4001:82b::200e" // Beispiel-IPv6-Adresse
->   ],
->   "errorMessage": null,
->   "rawOutput": null
-> }
+
+        {
+          "success": true,
+          "toolName": "AAAA Record Lookup (IPv6)",
+          "data": [
+            "2a00:1450:4001:82b::200e" // Beispiel-IPv6-Adresse
+          ],
+          "errorMessage": null,
+          "rawOutput": null
+        }
 
 ## Veröffentlichen
 
