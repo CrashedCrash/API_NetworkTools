@@ -5,20 +5,18 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API_NetworkTools.Data; // Für AppDbContext
-using API_NetworkTools.Models; // Für ShortUrlMapping
+using API_NetworkTools.Data;
+using API_NetworkTools.Models;
 using API_NetworkTools.Tools.Interfaces;
 using API_NetworkTools.Tools.Models;
-using Microsoft.EntityFrameworkCore; // Für ToListAsync, AnyAsync etc.
+using Microsoft.EntityFrameworkCore;
 
 namespace API_NetworkTools.Tools.Implementations
 {
     public class UrlShortenerTool : INetworkTool
     {
         private readonly AppDbContext _dbContext;
-        // Basis-URL für die generierten Kurzlinks.
-        // Diese muss auf die Domain zeigen, unter der dein RedirectController erreichbar ist.
-        private const string ShortLinkBaseUrl = "https://api.solidstate.network/s/"; // ANPASSEN, FALLS NÖTIG
+        private const string ShortLinkBaseUrl = "https://api.solidstate.network/s/";
 
         public UrlShortenerTool(AppDbContext dbContext)
         {
@@ -31,8 +29,6 @@ namespace API_NetworkTools.Tools.Implementations
 
         public List<ToolParameterInfo> GetParameters()
         {
-            // Das "target" wird die lange URL sein.
-            // Optional könnte man einen Parameter für einen benutzerdefinierten Kurzcode hinzufügen.
             return new List<ToolParameterInfo>();
         }
 
@@ -48,26 +44,24 @@ namespace API_NetworkTools.Tools.Implementations
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Ungültiges URL-Format. Bitte eine vollständige URL mit http:// oder https:// eingeben." };
             }
 
-            // Prüfen, ob diese lange URL bereits gekürzt wurde
             var existingMapping = await _dbContext.ShortUrlMappings.FirstOrDefaultAsync(m => m.LongUrl == longUrl);
             if (existingMapping != null)
             {
-                return new ToolOutput { 
-                    Success = true, 
-                    ToolName = DisplayName, 
+                return new ToolOutput {
+                    Success = true,
+                    ToolName = DisplayName,
                     Data = new { ShortUrl = ShortLinkBaseUrl + existingMapping.ShortCode, LongUrl = longUrl, Message = "Diese URL wurde bereits gekürzt." }
                 };
             }
 
             string shortCode;
             int attempts = 0;
-            const int maxAttempts = 5; // Versuche, einen einzigartigen Code zu generieren
+            const int maxAttempts = 5;
 
             do
             {
                 shortCode = GenerateShortCode();
                 if (attempts++ > maxAttempts) {
-                    // Sehr unwahrscheinlich bei vernünftiger Codelänge, aber als Absicherung
                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Konnte keinen einzigartigen Kurzcode generieren. Bitte später erneut versuchen." };
                 }
             } while (await _dbContext.ShortUrlMappings.AnyAsync(m => m.ShortCode == shortCode));
@@ -82,14 +76,14 @@ namespace API_NetworkTools.Tools.Implementations
             _dbContext.ShortUrlMappings.Add(newMapping);
             await _dbContext.SaveChangesAsync();
 
-            return new ToolOutput { 
-                Success = true, 
-                ToolName = DisplayName, 
+            return new ToolOutput {
+                Success = true,
+                ToolName = DisplayName,
                 Data = new { ShortUrl = ShortLinkBaseUrl + shortCode, LongUrl = longUrl }
             };
         }
 
-        private string GenerateShortCode(int length = 6) // Länge des Kurzcodes anpassen
+        private string GenerateShortCode(int length = 6)
         {
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             StringBuilder sb = new StringBuilder();

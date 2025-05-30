@@ -5,8 +5,8 @@ namespace API_NetworkTools.Tools.Models
     {
         public bool Success { get; set; }
         public required string ToolName { get; set; }
-        public object? Data { get; set; } // Nullable
-        public string? ErrorMessage { get; set; } // Nullable
-        public string? RawOutput { get; set; } // Nullable
+        public object? Data { get; set; }
+        public string? ErrorMessage { get; set; }
+        public string? RawOutput { get; set; }
     }
 }

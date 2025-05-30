@@ -1,8 +1,8 @@
-// API_NetworkTools/Data/AppDbContext.cs (oder Tools/Models/)
+// API_NetworkTools/Data/AppDbContext.cs
 using Microsoft.EntityFrameworkCore;
-using API_NetworkTools.Models; // Namespace deiner ShortUrlMapping-Klasse
+using API_NetworkTools.Models;
 
-namespace API_NetworkTools.Data // Oder ein passenderer Namespace
+namespace API_NetworkTools.Data
 {
     public class AppDbContext : DbContext
     {
@@ -15,7 +15,6 @@ namespace API_NetworkTools.Data // Oder ein passenderer Namespace
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Index für ShortCode, um sicherzustellen, dass er einzigartig ist und Suchen schnell sind
             modelBuilder.Entity<ShortUrlMapping>()
                 .HasIndex(s => s.ShortCode)
                 .IsUnique();
