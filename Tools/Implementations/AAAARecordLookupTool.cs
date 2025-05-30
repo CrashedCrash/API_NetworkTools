@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets; // Für AddressFamily
+using System.Net.Sockets;
 using System.Threading.Tasks;
-using API_NetworkTools.Tools.Interfaces; // Sicherstellen, dass INetworkTool hier korrekt referenziert wird
-using API_NetworkTools.Tools.Models;   // Sicherstellen, dass ToolOutput und ToolParameterInfo hier korrekt referenziert werden
+using API_NetworkTools.Tools.Interfaces;
+using API_NetworkTools.Tools.Models;
 
 namespace API_NetworkTools.Tools.Implementations
 {
@@ -17,7 +17,6 @@ namespace API_NetworkTools.Tools.Implementations
 
         public List<ToolParameterInfo> GetParameters()
         {
-            // Dieses Tool benötigt neben dem "target" (Hostname) keine zusätzlichen spezifischen Parameter.
             return new List<ToolParameterInfo>();
         }
 
@@ -28,10 +27,8 @@ namespace API_NetworkTools.Tools.Implementations
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Hostname darf nicht leer sein." };
             }
 
-            // Zusätzliche Validierung für den Hostnamen (optional, aber empfohlen)
             if (Uri.CheckHostName(target) == UriHostNameType.Unknown)
             {
-                 // Ausnahme für localhost, da CheckHostName dies als Unknown klassifizieren kann, es aber gültig ist.
                 if (!target.Equals("localhost", StringComparison.OrdinalIgnoreCase)) {
                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Hostname: {target}" };
                 }
@@ -41,7 +38,7 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 IPAddress[] addresses = await Dns.GetHostAddressesAsync(target);
                 List<string> aaaaRecords = addresses
-                                        .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6) // Filtert nach IPv6
+                                        .Where(ip => ip.AddressFamily == AddressFamily.InterNetworkV6)
                                         .Select(ip => ip.ToString())
                                         .ToList();
 
@@ -54,14 +51,12 @@ namespace API_NetworkTools.Tools.Implementations
                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Keine AAAA-Records (IPv6) für {target} gefunden.", Data = new List<string>() };
                 }
             }
-            catch (SocketException ex) // Tritt auf, wenn der Host nicht gefunden/aufgelöst werden kann
+            catch (SocketException ex)
             {
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Fehler beim Auflösen von {target}: {ex.Message}" };
             }
-            catch (System.Exception ex) // Fängt andere unerwartete Fehler ab
+            catch (System.Exception ex)
             {
-                // Es ist eine gute Praxis, hier zu loggen, um unerwartete Fehler zu debuggen.
-                // z.B. _logger.LogError(ex, "Unerwarteter Fehler im AAAARecordLookupTool für Ziel {Target}", target);
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Serverfehler ist aufgetreten: {ex.Message}" };
             }
         }

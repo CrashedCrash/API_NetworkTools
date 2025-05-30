@@ -30,9 +30,9 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 using (Ping pingSender = new Ping())
                 {
-                    PingOptions pingOptions = new PingOptions(); 
-                    byte[] buffer = new byte[32]; 
-                    PingReply reply = await pingSender.SendPingAsync(target, 4000, buffer, pingOptions); // Geänderter Aufruf
+                    PingOptions pingOptions = new PingOptions();
+                    byte[] buffer = new byte[32];
+                    PingReply reply = await pingSender.SendPingAsync(target, 4000, buffer, pingOptions);
 
                     if (reply.Status == IPStatus.Success)
                     {
@@ -40,7 +40,7 @@ namespace API_NetworkTools.Tools.Implementations
                             Target = target,
                             IpAddress = reply.Address?.ToString(),
                             RoundtripTime = reply.RoundtripTime,
-                            Ttl = reply.Options?.Ttl, 
+                            Ttl = reply.Options?.Ttl,
                             Status = reply.Status.ToString()
                         };
                         return new ToolOutput { Success = true, ToolName = DisplayName, Data = resultData };

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-// Stelle sicher, dass der Namespace zu deinem neuen Projektnamen passt
-using API_NetworkTools.Tools.Models; // Für ToolParameterInfo und ToolOutput
+using API_NetworkTools.Tools.Models;
 
 namespace API_NetworkTools.Tools.Interfaces
 {
