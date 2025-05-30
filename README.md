@@ -2,9 +2,15 @@
 
 Herzlich willkommen zu API_NetworkTools! Dies ist eine ASP.NET Core Web API, die eine Sammlung von Netzwerk-Dienstprogrammen bereitstellt. Sie wurde mit .NET 9 entwickelt und beinhaltet Werkzeuge wie Ping, URL-Verkürzer, A-Record-Lookup und AAAA-Record-Lookup.
 
-## Übersicht
+##  Übersicht
 
 Das Projekt zielt darauf ab, grundlegende Netzwerk-Tools über eine einfach zu bedienende HTTP-API zugänglich zu machen. Es verwendet SQLite für die Persistenz von Daten des URL-Verkürzers und Swagger für eine interaktive API-Dokumentation.
+
+## 🌐 Live-Demo & Testen
+
+Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webseite ausprobieren:
+
+[API Live-Test auf SolidState.Network](https://solidstate.network/?page_id=1815)
 
 ## ✨ Features
 
