@@ -7,13 +7,13 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/API_NetworkTools.csproj",
+        "${workspaceFolder}/API_NetworkTools/API_NetworkTools.csproj",
         "--configuration",
         "Release",
         "--runtime",
         "linux-x64",
         "--output",
-        "${workspaceFolder}/Bin/Publish/Linux-x64",
+        "${workspaceFolder}/API_NetworkTools/Bin/Publish/Linux-x64",
       ],
       "problemMatcher": "$msCompile",
       "group": {
