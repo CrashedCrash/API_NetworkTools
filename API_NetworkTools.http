@@ -1,6 +1,1 @@
 @API_NetworkTools_HostAddress = http://localhost:5199
-
-GET {{API_NetworkTools_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
