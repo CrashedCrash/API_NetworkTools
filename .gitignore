@@ -28,9 +28,10 @@
 # Build output folders
 [Dd]ebug/
 [Rr]elease/
-publish_output/ # Unser Veröffentlichungsordner
+Build/
 [Ll]ogs/
 [Ll]og/
+urlshortener.db
 
 # Paket-Manager-Caches
 *.nuget.props
