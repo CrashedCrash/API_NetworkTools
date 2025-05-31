@@ -40,7 +40,7 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
 1.  **Repository klonen:**
     ```bash
     git clone https://github.com/CrashedCrash/API_NetworkTools.git
-    cd API_NetworkTools_Verzeichnis # Wechsle in das Hauptverzeichnis des Projekts
+    cd API_NetworkTools_Verzeichnis
     ```
 
 2.  **Abhängigkeiten wiederherstellen:**
