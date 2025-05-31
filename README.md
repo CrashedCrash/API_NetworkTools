@@ -39,7 +39,7 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
 
 1.  **Repository klonen:**
     ```bash
-    git clone https://github.com/CrashedCrash/API_NetworkTools.git
+    git clone https://github.com/SolidStateNetwork/API_NetworkTools.git
     ```
 
 2.  **Abhängigkeiten wiederherstellen:**
