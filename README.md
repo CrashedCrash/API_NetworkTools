@@ -15,9 +15,10 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
 ## ✨ Features
 
 * **Ping**: Sendet ICMP Echo-Anfragen an einen Zielhost.
-* **URL Shortener**: Erstellt eine kurze, eindeutige URL für eine gegebene lange URL und leitet über den Kurzlink zum Original weiter.
 * **A Record Lookup**: Ruft die IPv4-Adressen (A-Records) für einen Hostnamen ab.
 * **AAAA Record Lookup**: Ruft die IPv6-Adressen (AAAA-Records) für einen Hostnamen ab.
+* **Traceroute**: Verfolgt die Route von Paketen zu einem Netzwerkhost und zeigt die einzelnen Hops an.
+* **URL Shortener**: Erstellt eine kurze, eindeutige URL für eine gegebene lange URL und leitet über den Kurzlink zum Original weiter.
 * **Swagger/OpenAPI-Dokumentation**: Interaktive API-Dokumentation über Swagger UI.
 * **CORS**: Konfiguriert, um Anfragen von beliebigen Ursprüngen zu erlauben.
 * **Datenbank-Migrationen**: Verwendet Entity Framework Core für die Datenbankverwaltung des URL-Verkürzers, Migrationen werden beim Start angewendet.
@@ -113,6 +114,13 @@ Die folgenden Tools sind über den Endpunkt `/api/tools/execute` verfügbar:
     * Beschreibung: "Findet die IPv6-Adressen (AAAA-Records) für einen Hostnamen."
     * `target`: Der Hostname, für den die AAAA-Records gesucht werden sollen.
     * Beispiel: `/api/tools/execute?toolIdentifier=aaaa-lookup&target=google.com`
+
+5.  **Traceroute**
+    * `toolIdentifier`: `traceroute`
+    * Beschreibung: "Verfolgt die Route von Paketen zu einem Netzwerkhost."
+    * `target`: Hostname oder IP-Adresse.
+    * Ausgabe: Eine Liste von Hops mit IP-Adresse, Roundtrip-Zeit und Status.
+    * Beispiel: `/api/tools/execute?toolIdentifier=traceroute&target=google.com`
 
 ## 📦 Publishing für Linux
 

@@ -31,6 +31,7 @@ builder.Services.AddTransient<INetworkTool, PingTool>();
 builder.Services.AddTransient<INetworkTool, UrlShortenerTool>();
 builder.Services.AddTransient<INetworkTool, ARecordLookupTool>();
 builder.Services.AddTransient<INetworkTool, AAAARecordLookupTool>();
+builder.Services.AddTransient<INetworkTool, TracerouteTool>();
 
 
 var app = builder.Build();
