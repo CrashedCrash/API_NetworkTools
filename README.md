@@ -1,6 +1,6 @@
 # API_NetworkTools
 
-Herzlich willkommen zu API_NetworkTools! Dies ist eine ASP.NET Core Web API, die eine Sammlung von Netzwerk-Dienstprogrammen bereitstellt. Sie wurde mit .NET 9 entwickelt und beinhaltet Werkzeuge wie Ping, URL-Verkürzer, A-Record-Lookup und AAAA-Record-Lookup.
+Herzlich willkommen zu API_NetworkTools! Dies ist eine ASP.NET Core Web API, die eine Sammlung von Netzwerk-Dienstprogrammen bereitstellt. Sie wurde mit .NET 9 entwickelt und beinhaltet Werkzeuge wie Ping, URL-Verkürzer, A-Record-Lookup, AAAA-Record-Lookup und Traceroute.
 
 ##  Übersicht
 
@@ -15,10 +15,10 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
 ## ✨ Features
 
 * **Ping**: Sendet ICMP Echo-Anfragen an einen Zielhost.
+* **URL Shortener**: Erstellt eine kurze, eindeutige URL für eine gegebene lange URL und leitet über den Kurzlink zum Original weiter.
 * **A Record Lookup**: Ruft die IPv4-Adressen (A-Records) für einen Hostnamen ab.
 * **AAAA Record Lookup**: Ruft die IPv6-Adressen (AAAA-Records) für einen Hostnamen ab.
 * **Traceroute**: Verfolgt die Route von Paketen zu einem Netzwerkhost und zeigt die einzelnen Hops an.
-* **URL Shortener**: Erstellt eine kurze, eindeutige URL für eine gegebene lange URL und leitet über den Kurzlink zum Original weiter.
 * **Swagger/OpenAPI-Dokumentation**: Interaktive API-Dokumentation über Swagger UI.
 * **CORS**: Konfiguriert, um Anfragen von beliebigen Ursprüngen zu erlauben.
 * **Datenbank-Migrationen**: Verwendet Entity Framework Core für die Datenbankverwaltung des URL-Verkürzers, Migrationen werden beim Start angewendet.
@@ -40,7 +40,7 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
 
 1.  **Repository klonen:**
     ```bash
-    git clone https://github.com/SolidStateNetwork/API_NetworkTools.git
+    git clone [https://github.com/SolidStateNetwork/API_NetworkTools.git](https://github.com/SolidStateNetwork/API_NetworkTools.git)
     ```
 
 2.  **Abhängigkeiten wiederherstellen:**
@@ -57,6 +57,28 @@ Du kannst die API und ihre Funktionen auch direkt online auf der folgenden Webse
     dotnet run --project API_NetworkTools/API_NetworkTools.csproj
     ```
     Die API ist standardmäßig unter `https://localhost:7067` und `http://localhost:5199` erreichbar (siehe `API_NetworkTools/Properties/launchSettings.json`).
+
+## 🛡️ Wichtige Hinweise zu Berechtigungen (Linux)
+
+Damit die Netzwerk-Tools **Ping** und **Traceroute** korrekt funktionieren, wenn die API unter einem nicht-privilegierten Benutzer (wie z.B. `www-data`) ausgeführt wird, benötigt die ausführbare Datei der Anwendung spezielle Berechtigungen.
+
+Nachdem du die Anwendung veröffentlicht hast (siehe "Publishing für Linux"), führe die folgenden Befehle für die ausführbare Datei aus (z.B. `API_NetworkTools/bin/publish/linux-x64-selfcontained/API_NetworkTools`):
+
+1.  **Ausführbar machen:**
+    Stelle sicher, dass die Datei Ausführungsrechte hat. Der Befehl `chmod a+x` gewährt allen Benutzern Ausführungsrechte:
+    ```bash
+    sudo chmod a+x /pfad/zu/deiner/API_NetworkTools_Executable
+    ```
+    *Hinweis: Eine restriktivere und oft bevorzugte Methode ist, die Datei dem korrekten Benutzer/Gruppe zuzuordnen (z.B. `sudo chown root:www-data /pfad/zur/executable`) und dann spezifischere Rechte zu vergeben, z.B. `sudo chmod 750 /pfad/zur/executable` oder `sudo chmod 550 /pfad/zur/executable`.*
+
+2.  **Netzwerk-RAW-Fähigkeit gewähren:**
+    Um ICMP-Anfragen (benötigt für Ping/Traceroute) ohne volle Root-Rechte senden zu können, muss der ausführbaren Datei die `CAP_NET_RAW`-Fähigkeit zugewiesen werden:
+    ```bash
+    sudo setcap cap_net_raw+eip /pfad/zu/deiner/API_NetworkTools_Executable
+    ```
+    Ersetze `/pfad/zu/deiner/API_NetworkTools_Executable` mit dem tatsächlichen Pfad zu deiner veröffentlichten ausführbaren Datei (z.B. `API_NetworkTools/bin/publish/linux-x64-selfcontained/API_NetworkTools` basierend auf der `tasks.json`).
+
+Diese Schritte sind typischerweise notwendig, wenn die API als systemd-Service unter einem Benutzer wie `www-data` betrieben wird.
 
 ## 📚 API-Dokumentation
 
