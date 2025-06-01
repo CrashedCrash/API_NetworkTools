@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API_NetworkTools.Tools.Interfaces;
 using API_NetworkTools.Tools.Models;
+// using Microsoft.Extensions.Logging; // Einkommentieren, wenn Logging verwendet wird
 
 namespace API_NetworkTools.Tools.Implementations
 {
@@ -16,6 +17,10 @@ namespace API_NetworkTools.Tools.Implementations
         public string Identifier => "traceroute";
         public string DisplayName => "Traceroute (Filtert lokale Hops)";
         public string Description => "Verfolgt die Route zu einem Host und zeigt Hops ab dem ersten öffentlichen Netzwerkknoten.";
+
+        // private readonly ILogger<TracerouteTool> _logger;
+        // public TracerouteTool(ILogger<TracerouteTool> logger) { _logger = logger; }
+
         public List<ToolParameterInfo> GetParameters() => new List<ToolParameterInfo>();
 
         private bool IsPrivateIpAddress(string? ipString)
@@ -28,29 +33,20 @@ namespace API_NetworkTools.Tools.Implementations
             if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) // IPv4
             {
                 byte[] ipBytes = ipAddress.GetAddressBytes();
-                // 10.0.0.0    - 10.255.255.255  (10.0.0.0/8)
                 if (ipBytes[0] == 10) return true;
-                // 172.16.0.0  - 172.31.255.255 (172.16.0.0/12)
                 if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) return true;
-                // 192.168.0.0 - 192.168.255.255 (192.168.0.0/16)
                 if (ipBytes[0] == 192 && ipBytes[1] == 168) return true;
-                // 127.0.0.0   - 127.255.255.255 (Loopback)
                 if (ipBytes[0] == 127) return true;
-                // 169.254.0.0 - 169.254.255.255 (APIPA / Link-Local)
                 if (ipBytes[0] == 169 && ipBytes[1] == 254) return true;
             }
             else if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6) // IPv6
             {
-                if (ipAddress.IsIPv6Loopback) return true;       // ::1/128
-                if (ipAddress.IsIPv6LinkLocal) return true;      // fe80::/10
+                if (ipAddress.Equals(IPAddress.IPv6Loopback)) return true;
 
-                // Prüfung für Unique Local Addresses (ULA) fc00::/7
-                // Die ersten 7 Bits sind 1111110. Das bedeutet, das erste Byte ist 0xFC oder 0xFD.
                 byte[] ipBytes = ipAddress.GetAddressBytes();
-                if ((ipBytes[0] & 0xFE) == 0xFC) // 0xFE ist 11111110. Maskiert das letzte Bit.
-                {
-                    return true;
-                }
+                if (ipBytes[0] == 0xFE && (ipBytes[1] & 0xC0) == 0x80) return true; // Link-Local
+
+                if ((ipBytes[0] & 0xFE) == 0xFC) return true; // ULA (fc00::/7)
             }
             return false;
         }
@@ -70,7 +66,7 @@ namespace API_NetworkTools.Tools.Implementations
                 }
             }
 
-            var allCollectedHops = new List<TracerouteHop>();
+            var allCollectedHops = new List<TracerouteHop>(); // hier TracerouteHop verwenden
             const int maxHops = 30;
             const int timeout = 4000;
             bool originalTargetReached = false;
@@ -79,7 +75,7 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 for (int ttl = 1; ttl <= maxHops; ttl++)
                 {
-                    var hop = new TracerouteHop { Hop = ttl };
+                    var hop = new TracerouteHop { Hop = ttl }; // hier TracerouteHop verwenden
                     PingOptions pingOptions = new PingOptions(ttl, true);
                     byte[] buffer = Encoding.ASCII.GetBytes("TracerouteSample");
                     PingReply? reply = null;
@@ -87,11 +83,7 @@ namespace API_NetworkTools.Tools.Implementations
                     try
                     {
                         reply = await pingSender.SendPingAsync(target, timeout, buffer, pingOptions);
-
-                        if (reply.Address != null)
-                        {
-                            hop.IpAddress = reply.Address.ToString();
-                        }
+                        if (reply.Address != null) hop.IpAddress = reply.Address.ToString();
 
                         if (reply.Status == IPStatus.Success)
                         {
@@ -99,7 +91,7 @@ namespace API_NetworkTools.Tools.Implementations
                             hop.Status = "Erfolgreich";
                             allCollectedHops.Add(hop);
                             originalTargetReached = true;
-                            break; 
+                            break;
                         }
                         else if (reply.Status == IPStatus.TtlExpired)
                         {
@@ -132,13 +124,13 @@ namespace API_NetworkTools.Tools.Implementations
                 }
             }
 
-            List<TracerouteHop> filteredHopsToShow = new List<TracerouteHop>();
+            List<TracerouteHop> filteredHopsToShow = new List<TracerouteHop>(); // hier TracerouteHop verwenden
             int firstPublicHopIndex = -1;
 
             for (int i = 0; i < allCollectedHops.Count; i++)
             {
                 if (!string.IsNullOrEmpty(allCollectedHops[i].IpAddress) &&
-                    IPAddress.TryParse(allCollectedHops[i].IpAddress, out _) && 
+                    IPAddress.TryParse(allCollectedHops[i].IpAddress, out _) &&
                     !IsPrivateIpAddress(allCollectedHops[i].IpAddress))
                 {
                     firstPublicHopIndex = i;
@@ -150,16 +142,16 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 filteredHopsToShow = allCollectedHops.GetRange(firstPublicHopIndex, allCollectedHops.Count - firstPublicHopIndex);
             }
-            
+
             StringBuilder filteredRawOutputBuilder = new StringBuilder();
             filteredRawOutputBuilder.AppendLine($"Traceroute für {target} (zeigt Hops ab dem ersten öffentlichen Netzwerkknoten):");
 
             if (filteredHopsToShow.Any())
             {
-                foreach (var hop in filteredHopsToShow)
+                foreach (var hop in filteredHopsToShow) // hier TracerouteHop verwenden
                 {
                     string rttDisplay = hop.RoundtripTime.HasValue ? $"{hop.RoundtripTime} ms" : "*";
-                    string ipDisplay = hop.IpAddress ?? "*"; 
+                    string ipDisplay = hop.IpAddress ?? "*";
                     filteredRawOutputBuilder.AppendLine($"{hop.Hop}\t{rttDisplay}\t{ipDisplay}\t({hop.Status})");
                 }
             }
@@ -169,7 +161,7 @@ namespace API_NetworkTools.Tools.Implementations
             }
             else if (!allCollectedHops.Any())
             {
-                 filteredRawOutputBuilder.AppendLine($"Keine Hops konnten für {target} ermittelt werden.");
+                filteredRawOutputBuilder.AppendLine($"Keine Hops konnten für {target} ermittelt werden.");
             }
 
             bool finalSuccess = false;
@@ -181,15 +173,14 @@ namespace API_NetworkTools.Tools.Implementations
                     finalSuccess = true;
                 }
             }
-            
+
             if (filteredHopsToShow.Any() && !finalSuccess && originalTargetReached) {
                  filteredRawOutputBuilder.AppendLine("Ziel wurde erreicht, befand sich aber nicht unter den angezeigten öffentlichen Hops (z.B. Ziel im lokalen Netz).");
-            } else if (filteredHopsToShow.Any() && !originalTargetReached && !finalSuccess) { // Hinzugefügt: !finalSuccess um Dopplung zu vermeiden
+            } else if (filteredHopsToShow.Any() && !originalTargetReached && !finalSuccess) {
                 filteredRawOutputBuilder.AppendLine("Ziel konnte innerhalb der angezeigten Hops nicht erreicht werden.");
             } else if (finalSuccess) {
                  filteredRawOutputBuilder.AppendLine("Ziel erfolgreich innerhalb der angezeigten Hops erreicht.");
             }
-
 
             return new ToolOutput
             {
@@ -199,5 +190,14 @@ namespace API_NetworkTools.Tools.Implementations
                 RawOutput = filteredRawOutputBuilder.ToString()
             };
         }
+    } // Ende der TracerouteTool Klasse
+
+    // Definition der TracerouteHop Klasse hier, wenn sie in derselben Datei bleiben soll:
+    public class TracerouteHop
+    {
+        public int Hop { get; set; }
+        public string? IpAddress { get; set; }
+        public long? RoundtripTime { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }
