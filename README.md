@@ -156,6 +156,57 @@ Die folgenden Tools sind über den Endpunkt `/api/tools/execute` verfügbar:
     * `target`: Der Domainname, für den die MX-Records gesucht werden sollen.
     * Beispiel: `/api/tools/execute?toolIdentifier=mx-lookup&target=google.com`
 
+8.  **NS Record Lookup**
+    * `toolIdentifier`: `ns-lookup`
+    * Beschreibung: "Findet die Name Server (NS) Records für eine Domain."
+    * `target`: Der Domainname, für den die NS-Records gesucht werden sollen.
+    * Beispiel: `/api/tools/execute?toolIdentifier=ns-lookup&target=github.com`
+
+9.  **TXT Record Lookup**
+    * `toolIdentifier`: `txt-lookup`
+    * Beschreibung: "Findet die Text (TXT) Records für eine Domain (z.B. für SPF, DKIM)."
+    * `target`: Der Domainname, für den die TXT-Records gesucht werden sollen.
+    * Beispiel: `/api/tools/execute?toolIdentifier=txt-lookup&target=google.com`
+
+10. **Port Scanner**
+    * `toolIdentifier`: `port-scan`
+    * Beschreibung: "Überprüft den Status von TCP-Ports auf einem Zielhost. (Verantwortungsbewusst einsetzen!)"
+    * `target`: Hostname oder IP-Adresse.
+    * `options`:
+        * `ports` (erforderlich): Kommagetrennte Liste von Portnummern (z.B. "80,443,21,22").
+        * `timeout` (optional): Timeout pro Port in Millisekunden (Standard: 2000).
+    * Beispiel: `/api/tools/execute?toolIdentifier=port-scan&target=scanme.nmap.org&options[ports]=22,80,443&options[timeout]=1000`
+
+11. **Whois Lookup**
+    * `toolIdentifier`: `whois-lookup`
+    * Beschreibung: "Ruft öffentliche Registrierungsinformationen für einen Domainnamen ab."
+    * `target`: Der Domainname, für den die Whois-Informationen gesucht werden sollen (z.B. "google.com").
+    * Ausgabe: Enthält den rohen Whois-Text und einige geparste Felder (falls verfügbar).
+    * Beispiel: `/api/tools/execute?toolIdentifier=whois-lookup&target=example.com`
+
+12. **IP Geolocation**
+    * `toolIdentifier`: `ip-geolocation`
+    * Beschreibung: "Ermittelt geografische Informationen und weitere Details zu einer IP-Adresse über den Dienst ip-api.com."
+    * `target`: Die IP-Adresse, für die Geolokalisierungsinformationen abgerufen werden sollen (z.B. "8.8.8.8").
+    * Hinweis: Verwendet den kostenlosen Endpunkt von ip-api.com, der Ratenbegrenzungen unterliegt (z.B. 45 Anfragen/Minute).
+    * Beispiel: `/api/tools/execute?toolIdentifier=ip-geolocation&target=1.1.1.1`
+
+13. **HTTP Header Viewer**
+    * `toolIdentifier`: `http-headers`
+    * Beschreibung: "Zeigt die HTTP-Antwort-Header von einer URL an."
+    * `target`: Die vollständige URL (z.B. "https://www.google.com").
+    * `options`:
+        * `method` (optional): Die HTTP-Methode, "HEAD" (Standard) oder "GET".
+    * Beispiel: `/api/tools/execute?toolIdentifier=http-headers&target=https://www.example.com&options[method]=HEAD`
+
+**SSL Certificate Information**
+    * `toolIdentifier`: `ssl-cert-info`
+    * Beschreibung: "Ruft Details des SSL/TLS-Zertifikats von einem Host ab (z.B. Aussteller, Gültigkeit, Kette)."
+    * `target`: Der Hostname des Servers (z.B. "google.com").
+    * `options`:
+        * `port` (optional): Die Portnummer (Standard: 443).
+    * Beispiel: `/api/tools/execute?toolIdentifier=ssl-cert-info&target=google.com&options[port]=443`
+
 ## 📦 Publishing für Linux
 
 Das Projekt enthält eine vordefinierte VS Code-Task in `API_NetworkTools/tasks.json`, um eine eigenständige (self-contained) Linux x64-Version der Anwendung zu veröffentlichen.

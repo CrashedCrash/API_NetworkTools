@@ -34,6 +34,13 @@ builder.Services.AddTransient<INetworkTool, AAAARecordLookupTool>();
 builder.Services.AddTransient<INetworkTool, TracerouteTool>();
 builder.Services.AddTransient<INetworkTool, ReverseDnsTool>();
 builder.Services.AddTransient<INetworkTool, MxRecordLookupTool>();
+builder.Services.AddTransient<INetworkTool, NsRecordLookupTool>();
+builder.Services.AddTransient<INetworkTool, TxtRecordLookupTool>();
+builder.Services.AddTransient<INetworkTool, PortScannerTool>();
+builder.Services.AddTransient<INetworkTool, WhoisLookupTool>();
+builder.Services.AddTransient<INetworkTool, IpGeolocationTool>();
+builder.Services.AddTransient<INetworkTool, HttpHeaderTool>();
+builder.Services.AddTransient<INetworkTool, SslCertificateTool>();
 
 var app = builder.Build();
 
