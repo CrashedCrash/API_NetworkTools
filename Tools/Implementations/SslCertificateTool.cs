@@ -98,7 +98,8 @@ namespace API_NetworkTools.Tools.Implementations
 
             if (Uri.CheckHostName(targetHost) == UriHostNameType.Unknown && !targetHost.Equals("localhost", StringComparison.OrdinalIgnoreCase))
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Hostname: {targetHost}" };
+                // Geänderte Fehlermeldung:
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Hostname/IP): {targetHost}" };
             }
             
             options.TryGetValue("port", out string? portString);

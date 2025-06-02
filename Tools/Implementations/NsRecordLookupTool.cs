@@ -32,7 +32,8 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 if (!targetDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Domainname: {targetDomain}" };
+                    // Geänderte Fehlermeldung:
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Domain): {targetDomain}" };
                 }
             }
 

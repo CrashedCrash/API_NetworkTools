@@ -42,7 +42,8 @@ namespace API_NetworkTools.Tools.Implementations
             {
                  if (!target.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                  {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Zielformat: {target}" };
+                    // Geänderte Fehlermeldung:
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Hostname/IP): {target}" };
                  }
             }
 

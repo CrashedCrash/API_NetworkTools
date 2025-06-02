@@ -31,10 +31,10 @@ namespace API_NetworkTools.Tools.Implementations
             // Einfache Validierung für einen Domainnamen (kann bei Bedarf erweitert werden)
             if (Uri.CheckHostName(targetDomain) == UriHostNameType.Unknown && !targetDomain.Contains("."))
             {
-                 // CheckHostName ist für reine Domain-Namen manchmal zu streng, daher zusätzliche Prüfung
-                if (!targetDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase)) // localhost ist kein gültiges Ziel für MX
+                if (!targetDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Domainname: {targetDomain}" };
+                    // Geänderte Fehlermeldung:
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Domain): {targetDomain}" };
                 }
             }
 

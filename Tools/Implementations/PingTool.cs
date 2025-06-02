@@ -24,7 +24,8 @@ namespace API_NetworkTools.Tools.Implementations
             }
             if (Uri.CheckHostName(target) == UriHostNameType.Unknown && !IPAddress.TryParse(target, out _))
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Zielformat: {target}" };
+                // Geänderte Fehlermeldung:
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Hostname/IP): {target}" };
             }
             try
             {

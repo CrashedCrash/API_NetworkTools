@@ -6,21 +6,25 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using API_NetworkTools.Data;
-using API_NetworkTools.Models;
+using API_NetworkTools.Models; // Namespace für ShortUrlMapping
 using API_NetworkTools.Tools.Interfaces;
-using API_NetworkTools.Tools.Models;
+using API_NetworkTools.Tools.Models; // Namespace für ToolOutput, ToolParameterInfo
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration; // Für IConfiguration
 
 namespace API_NetworkTools.Tools.Implementations
 {
     public class UrlShortenerTool : INetworkTool
     {
         private readonly AppDbContext _dbContext;
-        private const string ShortLinkBaseUrl = "https://api.solidstate.network/s/";
+        // Stelle sicher, dass ShortLinkBaseUrl hier deklariert ist:
+        private readonly string _shortLinkBaseUrl;
 
-        public UrlShortenerTool(AppDbContext dbContext)
+        public UrlShortenerTool(AppDbContext dbContext, IConfiguration configuration)
         {
             _dbContext = dbContext;
+            // Lade die Basis-URL aus der Konfiguration oder verwende einen Standardwert
+            _shortLinkBaseUrl = configuration.GetValue<string>("AppSettings:ShortLinkBaseUrl") ?? "https://api.solidstate.network/s/";
         }
 
         public string Identifier => "url-shortener";
@@ -50,19 +54,20 @@ namespace API_NetworkTools.Tools.Implementations
                 return new ToolOutput {
                     Success = true,
                     ToolName = DisplayName,
-                    Data = new { ShortUrl = ShortLinkBaseUrl + existingMapping.ShortCode, LongUrl = longUrl, Message = "Diese URL wurde bereits gekürzt." }
+                    Data = new { ShortUrl = _shortLinkBaseUrl + existingMapping.ShortCode, LongUrl = longUrl, Message = "Diese URL wurde bereits gekürzt." }
                 };
             }
 
             string shortCode;
             int attempts = 0;
-            const int maxAttempts = 5;
+            const int maxAttempts = 5; // Maximale Versuche, um einen einzigartigen Code zu generieren
 
             do
             {
                 shortCode = GenerateShortCode();
                 if (attempts++ > maxAttempts) {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Konnte keinen einzigartigen Kurzcode generieren. Bitte später erneut versuchen." };
+                    // Logge diesen Fall oder werfe eine spezifischere Exception, wenn nötig
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Konnte nach mehreren Versuchen keinen einzigartigen Kurzcode generieren. Bitte später erneut versuchen." };
                 }
             } while (await _dbContext.ShortUrlMappings.AnyAsync(m => m.ShortCode == shortCode));
 
@@ -79,7 +84,7 @@ namespace API_NetworkTools.Tools.Implementations
             return new ToolOutput {
                 Success = true,
                 ToolName = DisplayName,
-                Data = new { ShortUrl = ShortLinkBaseUrl + shortCode, LongUrl = longUrl }
+                Data = new { ShortUrl = _shortLinkBaseUrl + shortCode, LongUrl = longUrl }
             };
         }
 

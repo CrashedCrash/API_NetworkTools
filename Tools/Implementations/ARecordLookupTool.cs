@@ -30,7 +30,8 @@ namespace API_NetworkTools.Tools.Implementations
             if (Uri.CheckHostName(target) == UriHostNameType.Unknown)
             {
                 if (!target.Equals("localhost", StringComparison.OrdinalIgnoreCase)) {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Hostname: {target}" };
+                    // Geänderte Fehlermeldung:
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Hostname/IP): {target}" };
                 }
             }
 

@@ -33,7 +33,8 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 if (!targetDomain.Contains(".") || targetDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiger Domainname für Whois-Lookup: {targetDomain}" };
+                     // Geänderte Fehlermeldung:
+                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Domain): {targetDomain}" };
                 }
             }
 
