@@ -199,7 +199,7 @@ Die folgenden Tools sind über den Endpunkt `/api/tools/execute` verfügbar:
         * `method` (optional): Die HTTP-Methode, "HEAD" (Standard) oder "GET".
     * Beispiel: `/api/tools/execute?toolIdentifier=http-headers&target=https://www.example.com&options[method]=HEAD`
 
-**SSL Certificate Information**
+14. **SSL Certificate Information**
     * `toolIdentifier`: `ssl-cert-info`
     * Beschreibung: "Ruft Details des SSL/TLS-Zertifikats von einem Host ab (z.B. Aussteller, Gültigkeit, Kette)."
     * `target`: Der Hostname des Servers (z.B. "google.com").
