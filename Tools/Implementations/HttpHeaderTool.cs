@@ -14,16 +14,13 @@ namespace API_NetworkTools.Tools.Implementations
 {
     public class HttpHeaderTool : INetworkTool
     {
-        // HttpClient sollte als Singleton oder statisch instanziiert werden, wenn möglich.
-        // Für die Tool-Struktur hier erstellen wir ihn pro Aufruf, aber mit PooledConnectionLifetime.
-        // Eine bessere Lösung wäre, IHttpClientFactory zu verwenden, wenn die Tools als Scoped/Transient Services komplexer werden.
         private static readonly HttpClient httpClient = new HttpClient(new HttpClientHandler
         {
-            AllowAutoRedirect = false, // Wichtig, um Redirect-Header sehen zu können, anstatt ihnen zu folgen
+            AllowAutoRedirect = false, 
             UseCookies = false
         })
         {
-            Timeout = TimeSpan.FromSeconds(15) // Timeout für die gesamte Anfrage
+            Timeout = TimeSpan.FromSeconds(15) 
         };
 
         public string Identifier => "http-headers";
@@ -37,7 +34,7 @@ namespace API_NetworkTools.Tools.Implementations
                 new ToolParameterInfo(
                     name: "method",
                     label: "HTTP Method (HEAD oder GET)",
-                    type: "select", // Typ 'select' für eine Dropdown-Liste in der UI
+                    type: "select", 
                     isRequired: false,
                     defaultValue: "HEAD",
                     options: new List<string> { "HEAD", "GET" }
@@ -45,92 +42,125 @@ namespace API_NetworkTools.Tools.Implementations
             };
         }
 
-        public async Task<ToolOutput> ExecuteAsync(string targetUrl, Dictionary<string, string> options)
+        public async Task<ToolOutput> ExecuteAsync(string targetUrlInput, Dictionary<string, string> options)
         {
-            if (string.IsNullOrWhiteSpace(targetUrl))
+            if (string.IsNullOrWhiteSpace(targetUrlInput))
             {
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "URL darf nicht leer sein." };
             }
 
-            if (!Uri.TryCreate(targetUrl, UriKind.Absolute, out Uri? uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            Uri? validatedUri = null;
+            string attemptedUrl = targetUrlInput; // Wir verwenden eine neue Variable, um die ursprüngliche Eingabe bei Bedarf noch zu haben
+
+            // Prüfen, ob bereits ein Schema vorhanden ist
+            if (!targetUrlInput.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !targetUrlInput.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Ungültiges URL-Format. Bitte eine vollständige URL mit http:// oder https:// eingeben." };
+                // Kein Schema vorhanden, versuche zuerst https://
+                string httpsUrl = "https://" + targetUrlInput;
+                if (Uri.TryCreate(httpsUrl, UriKind.Absolute, out Uri? tempUriHttps) &&
+                    (tempUriHttps.Scheme == Uri.UriSchemeHttp || tempUriHttps.Scheme == Uri.UriSchemeHttps))
+                {
+                    validatedUri = tempUriHttps;
+                    attemptedUrl = httpsUrl;
+                }
+                else
+                {
+                    // Wenn https:// fehlschlägt, versuche http://
+                    string httpUrl = "http://" + targetUrlInput;
+                    if (Uri.TryCreate(httpUrl, UriKind.Absolute, out Uri? tempUriHttp) &&
+                        (tempUriHttp.Scheme == Uri.UriSchemeHttp || tempUriHttp.Scheme == Uri.UriSchemeHttps))
+                    {
+                        validatedUri = tempUriHttp;
+                        attemptedUrl = httpUrl;
+                    }
+                }
+            }
+            else
+            {
+                // Schema ist vorhanden, validiere die eingegebene URL direkt
+                if (Uri.TryCreate(targetUrlInput, UriKind.Absolute, out Uri? tempUri) &&
+                    (tempUri.Scheme == Uri.UriSchemeHttp || tempUri.Scheme == Uri.UriSchemeHttps))
+                {
+                    validatedUri = tempUri;
+                    // attemptedUrl bleibt targetUrlInput
+                }
+            }
+
+            // Wenn nach allen Versuchen keine gültige URI erstellt werden konnte
+            if (validatedUri == null)
+            {
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges URL-Format für '{targetUrlInput}'. Bitte eine vollständige URL (z.B. https://example.com) oder einen gültigen Hostnamen eingeben." };
             }
 
             options.TryGetValue("method", out string? httpMethodString);
             bool useHeadMethod = "HEAD".Equals(httpMethodString, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(httpMethodString);
-
             HttpMethod httpMethod = useHeadMethod ? HttpMethod.Head : HttpMethod.Get;
 
             try
             {
-                using (var requestMessage = new HttpRequestMessage(httpMethod, uri))
+                // Verwende die 'validatedUri' für die Anfrage
+                using (var requestMessage = new HttpRequestMessage(httpMethod, validatedUri)) 
                 {
-                    // Standard-User-Agent setzen, um Blockaden durch einige Server zu vermeiden
                     requestMessage.Headers.UserAgent.TryParseAdd("API_NetworkTools-HttpHeaderTool/1.0");
 
                     HttpResponseMessage response = await httpClient.SendAsync(requestMessage);
 
                     var headers = new Dictionary<string, List<string>>();
-                    // Statuszeile hinzufügen
                     headers.Add("Status-Line", new List<string> { $"HTTP/{response.Version} {(int)response.StatusCode} {response.ReasonPhrase}" });
 
-                    // Response Headers
                     foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
                     {
                         headers.Add(header.Key, header.Value.ToList());
                     }
 
-                    // Content Headers (falls vorhanden, auch bei HEAD-Anfragen können einige Content-Header gesendet werden)
                     if (response.Content?.Headers != null)
                     {
                         foreach (KeyValuePair<string, IEnumerable<string>> header in response.Content.Headers)
                         {
-                            if (!headers.ContainsKey(header.Key)) // Füge nur hinzu, wenn nicht bereits als Response-Header vorhanden
+                            if (!headers.ContainsKey(header.Key))
                             {
                                 headers.Add(header.Key, header.Value.ToList());
                             }
-                            else // Manchmal gibt es Header sowohl im Response- als auch im Content-Teil, z.B. "Content-Type"
+                            else
                             {
                                 headers[header.Key].AddRange(header.Value);
-                                headers[header.Key] = headers[header.Key].Distinct().ToList(); // Duplikate entfernen
+                                headers[header.Key] = headers[header.Key].Distinct().ToList();
                             }
                         }
                     }
                     
-                    // Erstelle einen RawOutput String
                     StringBuilder rawOutputBuilder = new StringBuilder();
                     rawOutputBuilder.AppendLine($"HTTP/{response.Version} {(int)response.StatusCode} {response.ReasonPhrase}");
                     foreach (var headerEntry in headers)
                     {
-                        if (headerEntry.Key == "Status-Line") continue; // Bereits oben hinzugefügt
+                        if (headerEntry.Key == "Status-Line") continue;
                         foreach (var value in headerEntry.Value)
                         {
                             rawOutputBuilder.AppendLine($"{headerEntry.Key}: {value}");
                         }
                     }
 
-
                     return new ToolOutput { Success = true, ToolName = DisplayName, Data = headers, RawOutput = rawOutputBuilder.ToString() };
                 }
             }
             catch (HttpRequestException httpEx)
             {
-                // Speziellere Fehlermeldung für DNS-Probleme innerhalb einer HttpRequestException
+                string errorMessage = $"HTTP-Anfragefehler für '{attemptedUrl}': {httpEx.Message}";
                 if (httpEx.InnerException is SocketException sockEx && 
                     (sockEx.SocketErrorCode == SocketError.HostNotFound || sockEx.SocketErrorCode == SocketError.TryAgain || sockEx.SocketErrorCode == SocketError.NoData))
                 {
-                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Fehler beim Auflösen des Hosts '{uri.Host}': {sockEx.Message}" };
+                     errorMessage = $"Fehler beim Auflösen des Hosts '{validatedUri.Host}' (von '{attemptedUrl}'): {sockEx.Message}";
                 }
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"HTTP-Anfragefehler: {httpEx.Message}" };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = errorMessage };
             }
-            catch (TaskCanceledException tex) // Tritt auf, wenn das HttpClient-Timeout erreicht wird
+            catch (TaskCanceledException tex) 
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Die Anfrage an {targetUrl} hat das Zeitlimit überschritten. Fehler: {tex.Message}" };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Die Anfrage an '{attemptedUrl}' hat das Zeitlimit überschritten. Fehler: {tex.Message}" };
             }
             catch (Exception ex)
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}" };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Fehler ist bei der Anfrage an '{attemptedUrl}' aufgetreten: {ex.Message}" };
             }
         }
     }
