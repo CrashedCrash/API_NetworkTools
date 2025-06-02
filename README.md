@@ -144,6 +144,18 @@ Die folgenden Tools sind über den Endpunkt `/api/tools/execute` verfügbar:
     * Ausgabe: Eine Liste von Hops mit IP-Adresse, Roundtrip-Zeit und Status.
     * Beispiel: `/api/tools/execute?toolIdentifier=traceroute&target=google.com`
 
+6.  **Reverse DNS Lookup (PTR Record)**
+    * `toolIdentifier`: `reverse-dns`
+    * Beschreibung: "Ermittelt den Hostnamen zu einer gegebenen IP-Adresse."
+    * `target`: Die IP-Adresse, für die der Hostname gesucht werden soll.
+    * Beispiel: `/api/tools/execute?toolIdentifier=reverse-dns&target=8.8.8.8`
+
+7.  **MX Record Lookup**
+    * `toolIdentifier`: `mx-lookup`
+    * Beschreibung: "Findet die Mail Exchange (MX) Records für eine Domain."
+    * `target`: Der Domainname, für den die MX-Records gesucht werden sollen.
+    * Beispiel: `/api/tools/execute?toolIdentifier=mx-lookup&target=google.com`
+
 ## 📦 Publishing für Linux
 
 Das Projekt enthält eine vordefinierte VS Code-Task in `API_NetworkTools/tasks.json`, um eine eigenständige (self-contained) Linux x64-Version der Anwendung zu veröffentlichen.

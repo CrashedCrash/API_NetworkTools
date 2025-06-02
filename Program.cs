@@ -32,7 +32,8 @@ builder.Services.AddTransient<INetworkTool, UrlShortenerTool>();
 builder.Services.AddTransient<INetworkTool, ARecordLookupTool>();
 builder.Services.AddTransient<INetworkTool, AAAARecordLookupTool>();
 builder.Services.AddTransient<INetworkTool, TracerouteTool>();
-
+builder.Services.AddTransient<INetworkTool, ReverseDnsTool>();
+builder.Services.AddTransient<INetworkTool, MxRecordLookupTool>();
 
 var app = builder.Build();
 
