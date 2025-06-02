@@ -168,8 +168,9 @@ namespace API_NetworkTools.Tools.Implementations
                                 {
                                     TargetHost = targetHost,
                                     EnabledSslProtocols = SslProtocols.None, // Lässt das OS wählen
-                                    CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
-                                    RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true // Erneut, da der Callback im Konstruktor manchmal nicht ausreicht
+                                    CertificateRevocationCheckMode = X509RevocationMode.NoCheck
+                                    // Die Zeile für RemoteCertificateValidationCallback wurde entfernt.
+                                    // Dadurch wird der Callback aus dem SslStream-Konstruktor verwendet.
                                 };
                                 await sslStream.AuthenticateAsClientAsync(sslClientAuthOptions, ctsAuth.Token);
                             }

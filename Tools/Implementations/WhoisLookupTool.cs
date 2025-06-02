@@ -33,30 +33,30 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 if (!targetDomain.Contains(".") || targetDomain.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                     // Geänderte Fehlermeldung:
                      return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges Ziel (Domain): {targetDomain}" };
                 }
             }
 
             try
             {
-                // Wir nehmen die Warnung CS0618 (obsolete) in Kauf, um Kompilierfehler zu vermeiden,
-                // da die empfohlene Überladung mit 'token' Parameter Probleme gemacht hat.
-                // Die parameterlose Version sollte für die meisten Fälle funktionieren.
+                // 'result' wird hier deklariert und ist im gesamten try-Block gültig.
                 var result = await WhoisClient.QueryAsync(targetDomain, options: null, token: CancellationToken.None);
 
                 if (result != null && !string.IsNullOrWhiteSpace(result.Raw))
                 {
+                    // 'data' wird hier deklariert und ist innerhalb dieses if-Blocks gültig.
                     var data = new {
-                        Domain = targetDomain,
-                        // OrganizationName ist in WhoisClient.NET v6.1.0 nicht direkt auf WhoisResponse verfügbar.
-                        // Wir lassen das Data-Objekt sehr minimal, um Fehler zu vermeiden.
+                        Domain = targetDomain
                     };
                     
-                    return new ToolOutput { Success = true, ToolName = DisplayName, RawOutput = result.ToString(), Data = data };
+                    // Diese Zeile verwendet 'result.Raw' und 'data'. Beide sind hier im korrekten Scope.
+                    // Dies ist wahrscheinlich die Zeile, die Fehler verursacht hat (Zeile 28 laut deiner Meldung).
+                    return new ToolOutput { Success = true, ToolName = DisplayName, RawOutput = result.Raw, Data = data };
                 }
                 else
                 {
+                    // 'result' ist hier immer noch im Scope (kann null sein oder Raw ist leer).
+                    // 'data' wurde in diesem Zweig nicht deklariert.
                     return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Keine Whois-Informationen für {targetDomain} gefunden oder die Antwort war leer/ungültig." };
                 }
             }
@@ -64,15 +64,8 @@ namespace API_NetworkTools.Tools.Implementations
             {
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Netzwerkfehler (SocketException) für {targetDomain}: {sockEx.Message}" };
             }
-            // Da wir Probleme mit dem Namespace für WhoisException haben, entfernen wir den spezifischen Catch-Block.
-            // Der allgemeine Exception-Handler wird alle Fehler der Whois-Bibliothek fangen.
-            // catch (Whois.NET.Exceptions.WhoisException whoisEx) 
-            // {
-            //      return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Whois-Fehler für {targetDomain}: {whoisEx.Message}" };
-            // }
             catch (Exception ex) 
             {
-                // Wir geben den Typnamen der Exception aus, um ggf. doch noch herauszufinden, ob eine spezifische WhoisException geworfen wird.
                 return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein Fehler ({ex.GetType().FullName}) ist beim Whois-Lookup aufgetreten: {ex.Message}" };
             }
         }
