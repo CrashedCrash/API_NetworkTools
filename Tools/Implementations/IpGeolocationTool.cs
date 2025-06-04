@@ -1,7 +1,8 @@
 // API_NetworkTools/Tools/Implementations/IpGeolocationTool.cs
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Linq; // Hinzugefügt für .FirstOrDefault()
+using System.Net; // Hinzugefügt für IPAddress und Dns
 using System.Net.Http;
 using System.Net.Http.Json; // Für ReadFromJsonAsync
 using System.Text.Json.Serialization; // Für JsonPropertyName
@@ -62,41 +63,67 @@ namespace API_NetworkTools.Tools.Implementations
 
     public class IpGeolocationTool : INetworkTool
     {
-        private static readonly HttpClient httpClient = new HttpClient(); // Einmalige Instanz für bessere Performance
-        private const string ApiBaseUrl = "http://ip-api.com/json/"; // HTTPS verwenden
+        private static readonly HttpClient httpClient = new HttpClient();
+        // WICHTIG: Auf HTTP geändert, da der kostenlose Endpunkt SSL nicht unterstützt
+        private const string ApiBaseUrl = "http://ip-api.com/json/";
 
         public string Identifier => "ip-geolocation";
         public string DisplayName => "IP Geolocation";
-        public string Description => "Ermittelt geografische Informationen für eine IP-Adresse über ip-api.com.";
+        public string Description => "Ermittelt geografische Informationen für eine IP-Adresse oder Domain über ip-api.com.";
 
         public List<ToolParameterInfo> GetParameters()
         {
             return new List<ToolParameterInfo>();
         }
 
-        public async Task<ToolOutput> ExecuteAsync(string targetIpAddress, Dictionary<string, string> options)
+        public async Task<ToolOutput> ExecuteAsync(string targetNameOrIp, Dictionary<string, string> options)
         {
-            if (string.IsNullOrWhiteSpace(targetIpAddress))
+            if (string.IsNullOrWhiteSpace(targetNameOrIp))
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "IP-Adresse darf nicht leer sein." };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = "Ziel (Hostname/IP-Adresse) darf nicht leer sein." };
             }
 
-            if (!IPAddress.TryParse(targetIpAddress, out _))
+            string ipToQuery;
+
+            // Prüfen, ob die Eingabe ein Hostname und keine IP-Adresse ist
+            if (!IPAddress.TryParse(targetNameOrIp, out IPAddress? parsedIpAddress))
             {
-                // ip-api.com kann auch mit ungültigen IPs umgehen und gibt dann einen Fehler zurück,
-                // aber eine grundlegende Vorabprüfung ist sinnvoll.
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ungültiges IP-Adressformat: {targetIpAddress}" };
+                // Die Eingabe ist keine gültige IP, also versuchen wir, sie als Hostname aufzulösen
+                try
+                {
+                    IPAddress[] addresses = await Dns.GetHostAddressesAsync(targetNameOrIp);
+                    if (addresses == null || addresses.Length == 0)
+                    {
+                        return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Hostname '{targetNameOrIp}' konnte nicht aufgelöst werden." };
+                    }
+                    // Bevorzuge IPv4, falls vorhanden, ansonsten nimm die erste Adresse
+                    // ip-api.com kann sowohl IPv4 als auch IPv6 verarbeiten
+                    parsedIpAddress = addresses.FirstOrDefault(addr => addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                      ?? addresses[0];
+                    ipToQuery = parsedIpAddress.ToString();
+                }
+                catch (System.Net.Sockets.SocketException ex)
+                {
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Fehler beim Auflösen des Hostnamens '{targetNameOrIp}': {ex.Message}" };
+                }
+                catch (Exception ex) // Andere unerwartete Fehler bei der DNS-Auflösung
+                {
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Fehler ist beim Auflösen von '{targetNameOrIp}' aufgetreten: {ex.Message}" };
+                }
+            }
+            else // Die Eingabe war bereits eine IP-Adresse
+            {
+                // Stelle sicher, dass wir die geparste (und potenziell kanonisierte) IP-Adresse verwenden
+                ipToQuery = parsedIpAddress.ToString();
             }
 
+            // Der Rest der Methode verwendet 'ipToQuery' für die Anfrage an ip-api.com
             try
             {
-                // Spezifische Felder für die Abfrage auswählen, um die Antwortgröße zu reduzieren (optional, aber gute Praxis)
-                // https://ip-api.com/docs/api:json (siehe "Fields")
-                // Beispiel: fields=status,message,country,countryCode,regionName,city,lat,lon,isp,org,query
-                string apiUrl = $"{ApiBaseUrl}{targetIpAddress}?fields=status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query";
-                
+                string apiUrl = $"{ApiBaseUrl}{ipToQuery}?fields=status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query";
+
                 HttpResponseMessage response = await httpClient.GetAsync(apiUrl);
-                response.EnsureSuccessStatusCode(); // Wirft eine Exception bei nicht-erfolgreichen HTTP-Statuscodes (4xx, 5xx)
+                response.EnsureSuccessStatusCode();
 
                 IpApiComResponse? geoResponse = await response.Content.ReadFromJsonAsync<IpApiComResponse>();
 
@@ -107,20 +134,36 @@ namespace API_NetworkTools.Tools.Implementations
 
                 if ("success".Equals(geoResponse.Status, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new ToolOutput { Success = true, ToolName = DisplayName, Data = geoResponse };
+                    // Ggf. hier das Data-Objekt anreichern, um targetNameOrIp und ipToQuery anzuzeigen, falls unterschiedlich
+                    object dataToReturn = geoResponse;
+                    if (!targetNameOrIp.Equals(ipToQuery, StringComparison.OrdinalIgnoreCase))
+                    {
+                        dataToReturn = new {
+                            OriginalInput = targetNameOrIp,
+                            ResolvedIp = ipToQuery,
+                            Geolocation = geoResponse
+                        };
+                    }
+                    return new ToolOutput { Success = true, ToolName = DisplayName, Data = dataToReturn };
                 }
                 else
                 {
-                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"API-Fehler: {geoResponse.Message ?? "Unbekannter Fehler von ip-api.com"}" , Data = geoResponse};
+                    string apiErrorMessage = geoResponse.Message ?? "Unbekannter Fehler von ip-api.com";
+                    if (!targetNameOrIp.Equals(ipToQuery, StringComparison.OrdinalIgnoreCase)) {
+                         apiErrorMessage = $"API-Fehler für IP '{ipToQuery}' (aufgelöst von '{targetNameOrIp}'): {apiErrorMessage}";
+                    } else {
+                         apiErrorMessage = $"API-Fehler für '{ipToQuery}': {apiErrorMessage}";
+                    }
+                    return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = apiErrorMessage, Data = geoResponse };
                 }
             }
             catch (HttpRequestException httpEx)
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Netzwerk- oder HTTP-Fehler beim Abrufen der Geolocation-Daten: {httpEx.Message}" };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Netzwerk- oder HTTP-Fehler beim Abrufen der Geolocation-Daten für '{ipToQuery}': {httpEx.Message}" };
             }
-            catch (Exception ex)
+            catch (Exception ex) // Andere unerwartete Fehler beim Abruf der Geolocation
             {
-                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Fehler ist aufgetreten: {ex.Message}" };
+                return new ToolOutput { Success = false, ToolName = DisplayName, ErrorMessage = $"Ein unerwarteter Fehler ist beim Abrufen der Geolocation für '{ipToQuery}' aufgetreten: {ex.Message}" };
             }
         }
     }
