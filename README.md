@@ -34,7 +34,7 @@ Du kannst die API und ihre Funktionen direkt online auf der folgenden Webseite a
 
 1.  **Repository klonen:**
     ```bash
-    git clone [https://github.com/SolidStateNetwork/API_NetworkTools.git](https://github.com/SolidStateNetwork/API_NetworkTools.git)
+    git clone https://github.com/SolidStateNetwork/API_NetworkTools.git
     cd API_NetworkTools
     ```
 
