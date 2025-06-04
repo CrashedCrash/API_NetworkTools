@@ -63,7 +63,7 @@ namespace API_NetworkTools.Tools.Implementations
     public class IpGeolocationTool : INetworkTool
     {
         private static readonly HttpClient httpClient = new HttpClient(); // Einmalige Instanz für bessere Performance
-        private const string ApiBaseUrl = "https://ip-api.com/json/"; // HTTPS verwenden
+        private const string ApiBaseUrl = "http://ip-api.com/json/"; // HTTPS verwenden
 
         public string Identifier => "ip-geolocation";
         public string DisplayName => "IP Geolocation";
